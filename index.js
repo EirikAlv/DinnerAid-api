@@ -9,7 +9,7 @@ const app = express();
 const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.ENVIRONMENT === 'DEV' ? false : true
+  ssl: process.env.ENVIRONMENT === 'DEV' ? false : { rejectUnauthorized: false }
 });
 
 app.get("/api/external", checkJwt, (req, res) => {
