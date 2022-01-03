@@ -1,11 +1,25 @@
 const express = require('express');
+
+//CORS
+var cors = require('cors');
+const corsOptions ={
+  origin:process.env.UI_BASE_URL, 
+  credentials:true,            //access-control-allow-credentials:true
+  optionSuccessStatus:200
+}
+
 require('dotenv').config()
+
 const { auth } = require("express-oauth2-jwt-bearer");
 const checkJwt = auth({
   issuerBaseURL: process.env.ISSUER_URL,
   audience: process.env.AUDIENCE
 });
+
+
 const app = express();
+app.use(cors(corsOptions));
+
 const { Pool } = require('pg');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
