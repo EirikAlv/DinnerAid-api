@@ -53,7 +53,7 @@ app.get('/api/grocery/:name', checkJwt, async function(req, res) {
     res.json(grocery);
 })
 
-app.get('/api/uom', async function(req, res) {
+app.get('/api/uom', checkJwt, async function(req, res) {
     let uom = await repo.get_uom();
 
     res.json(uom);
@@ -61,7 +61,7 @@ app.get('/api/uom', async function(req, res) {
 
 // ----------------------------------------------------------------------------
 // POST
-app.post('/api/saveGrocery', async function (req, res){
+app.post('/api/saveGrocery', checkJwt, async function (req, res){
     await repo.saveGrocery(req.body);
     res.json(req.body);
 });
