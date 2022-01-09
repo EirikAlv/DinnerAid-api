@@ -34,7 +34,6 @@ module.exports = {
 				LEFT JOIN unit_of_mesure u
 					ON unit_of_mesure = u.id
 				`);
-            // const results = { 'results': (result) ? result.rows : null};
             client.release();
             return(result?.rows);
 		} catch (err) {
@@ -52,7 +51,6 @@ module.exports = {
 					groceries
 				WHERE english = $1
 				`, [name]);
-            // const results = { 'results': (result) ? result.rows : null};
             client.release();
             return(result?.rows);
 		} catch (err) {
@@ -85,8 +83,8 @@ module.exports = {
 						ON g.id = grocerie_id
 					LEFT JOIN unit_of_mesure uom
 						ON uom.id = g.unit_of_mesure
-					WHERE recipe_id = ${el}; 
-				`))?.rows
+					WHERE recipe_id = $1; 
+				`, [el]))?.rows
 				
 				o['Table'] = response;
 				newOut.push(o);
@@ -99,5 +97,56 @@ module.exports = {
 			return("Error " + err);
 		}
 	},
+	get_uom: async function() {
+		try {
+			const client = await pool.connect();
+            const result = await client.query(
+				`SELECT 
+					*
+				FROM 
+					unit_of_mesure
+				`);
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+	},
+	get_uom_by_name: async function(name) {
+		try {
+			const client = await pool.connect();
+            const result = await client.query(
+				`SELECT 
+					*
+				FROM 
+					unit_of_mesure
+				WHERE name =  $1; 
+				`, [name]);
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+	},
+
+	// --------------------------------------------------------------------------------------
+	// INSERT
+	saveGrocery: async function(grocery) {
+        let editedUOMId = (await this.get_uom_by_name(grocery.unit_of_mesure))[0]?.id;
+        try {
+			const values = [grocery.norwegian, grocery.english, grocery.section, editedUOMId, grocery.standard_quantity]
+			const client = await pool.connect();
+            const result = await client.query(
+				`INSERT INTO groceries(id, norwegian, english, section, unit_of_mesure, standard_quantity)
+				VALUES (DEFAULT, $1, $2, $3, $4, $5)`, values);
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+    },
 	
 }

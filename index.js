@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser')
 const repo = require('./repository')
 require('dotenv').config()
 
@@ -19,8 +20,10 @@ const checkJwt = auth({
 
 const app = express();
 app.use(cors(corsOptions));
+app.use(bodyParser.json())
 
-
+// -----------------------------------------------------------------------------
+// GET
 app.get("/api/external", checkJwt, (req, res) => {
 	res.send({
 		msg: "Your Access Token was successfully validated!"
@@ -50,7 +53,20 @@ app.get('/api/grocery/:name', checkJwt, async function(req, res) {
     res.json(grocery);
 })
 
+app.get('/api/uom', async function(req, res) {
+    let uom = await repo.get_uom();
 
+    res.json(uom);
+});
+
+// ----------------------------------------------------------------------------
+// POST
+app.post('/api/saveGrocery', async function (req, res){
+    await repo.saveGrocery(req.body);
+    res.json(req.body);
+});
+
+// ----------------------------------------------------------------------------
 let port = process.env.PORT;
 if (port == null || port == "") {
 	port = 5000;
