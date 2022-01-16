@@ -41,6 +41,22 @@ module.exports = {
 			return("Error " + err);
 		}
     },
+	get_groceries_with_id: async function() {
+		try {
+			const client = await pool.connect();
+            const result = await client.query(
+				`SELECT 
+					*
+				FROM 
+					groceries
+				`);
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+	},
 	get_grocery: async function(name) {
 		try {
 			const client = await pool.connect();
@@ -97,6 +113,23 @@ module.exports = {
 			return("Error " + err);
 		}
 	},
+	get_recipe_by_name: async function(recipe_name) {
+		try {
+			const client = await pool.connect();
+            const result = await client.query(
+				`SELECT 
+					*
+				FROM 
+					recipes_names
+				WHERE name =  $1; 
+				`, [recipe_name]);
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+	},
 	get_uom: async function() {
 		try {
 			const client = await pool.connect();
@@ -133,7 +166,7 @@ module.exports = {
 
 	// --------------------------------------------------------------------------------------
 	// INSERT
-	saveGrocery: async function(grocery) {
+	save_grocery: async function(grocery) {
         let editedUOMId = (await this.get_uom_by_name(grocery.unit_of_mesure))[0]?.id;
         try {
 			const values = [grocery.norwegian, grocery.english, grocery.section, editedUOMId, grocery.standard_quantity]
@@ -143,6 +176,51 @@ module.exports = {
 				VALUES (DEFAULT, $1, $2, $3, $4, $5)`, values);
             client.release();
             return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+    },
+	save_recipe_name: async function(recipe_name) {
+		try {
+			const client = await pool.connect();
+            const result = await client.query(
+				`INSERT INTO recipes_names(name)
+				VALUES ($1) RETURNING *`, [recipe_name]);
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+	},
+	save_recipe: async function(recipeName, groceries) {
+        let recipeId = -1;
+        let response = await (this.get_recipe_by_name(recipeName))[0];
+        if (response) {
+            recipeId = response.id;
+        } else {
+            recipeId = (await this.save_recipe_name(recipeName))[0].id;
+        }
+
+		let grocery_table = await this.get_groceries_with_id();
+        let new_groceries = groceries.map(x => {
+            let found = grocery_table.find(y => y.norwegian === x.norwegian);
+            found.amount = x.amount;
+            return found; 
+        });
+		
+        try {
+			const client = await pool.connect();
+			const values = new_groceries.map(x => [recipeId, x.id, x.amount]);
+			
+			
+			for (const x of values) {
+				await client.query(
+					`INSERT INTO recipes(recipe_id, grocerie_id, amount)
+					VALUES ($1, $2, $3)`, x);
+			}
+            client.release();
 		} catch (err) {
 			console.error(err);
 			return("Error " + err);

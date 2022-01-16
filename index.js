@@ -62,7 +62,13 @@ app.get('/api/uom', checkJwt, async function(req, res) {
 // ----------------------------------------------------------------------------
 // POST
 app.post('/api/saveGrocery', checkJwt, async function (req, res){
-    await repo.saveGrocery(req.body);
+    await repo.save_grocery(req.body);
+    res.json(req.body);
+});
+
+app.post('/api/saveRecipe', checkJwt, async function (req, res){
+    let body = req.body;
+    await repo.save_recipe(body.Name, body.GroceryTable);
     res.json(req.body);
 });
 
