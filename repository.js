@@ -61,11 +61,18 @@ module.exports = {
 		try {
 			const client = await pool.connect();
             const result = await client.query(
-				`SELECT 
-					*
+				`SELECT
+					g.id,
+					Norwegian, 
+					English, 
+					Section,
+					standard_quantity,
+					u.name AS UOM
 				FROM 
-					groceries
-				WHERE english = $1
+					groceries as g
+				LEFT JOIN unit_of_mesure u
+				ON unit_of_mesure = u.id
+				WHERE norwegian = $1
 				`, [name]);
             client.release();
             return(result?.rows);
@@ -167,7 +174,7 @@ module.exports = {
 	// --------------------------------------------------------------------------------------
 	// INSERT
 	save_grocery: async function(grocery) {
-        let editedUOMId = (await this.get_uom_by_name(grocery.unit_of_mesure))[0]?.id;
+        let editedUOMId = (await this.get_uom_by_name(grocery.uom))[0]?.id;
         try {
 			const values = [grocery.norwegian, grocery.english, grocery.section, editedUOMId, grocery.standard_quantity]
 			const client = await pool.connect();
@@ -226,5 +233,37 @@ module.exports = {
 			return("Error " + err);
 		}
     },
+
+	// UPDATE
+	update_grocery: async function(original, edited) {
+		const uom_id = (await this.get_uom_by_name(edited.uom))[0].id;
+
+		const set_values = [
+			edited.norwegian,
+			edited.english,
+			edited.section,
+			uom_id,
+			edited.standard_quantity,
+			original.norwegian,
+		]
+
+		try {
+			const client = await pool.connect();
+            const result = await client.query(
+				`UPDATE groceries
+				SET Norwegian = $1,
+					English = $2,
+					Section = $3,
+					unit_of_mesure = $4,
+					standard_quantity = $5
+				WHERE
+					norwegian = $6`, set_values);
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
+	}
 	
 }
