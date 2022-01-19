@@ -23,14 +23,15 @@ module.exports = {
 		try {
 			const client = await pool.connect();
             const result = await client.query(
-				`SELECT 
-					Norwegian, 
-					English, 
-					Section,
-					standard_quantity,
+				`SELECT
+					g.id,
+					g.Norwegian, 
+					g.English, 
+					g.Section,
+					g.standard_quantity,
 					u.name AS UOM
 				FROM 
-					groceries
+					groceries as g
 				LEFT JOIN unit_of_mesure u
 					ON unit_of_mesure = u.id
 				`);
@@ -95,6 +96,7 @@ module.exports = {
 				o['Name'] = names.find(n => n.id === el).name;
 				let response = (await client.query(`
 					SELECT 
+						g.id,
 						g.Norwegian, 
 						g.English, 
 						g.Section, 
@@ -264,6 +266,35 @@ module.exports = {
 			console.error(err);
 			return("Error " + err);
 		}
+	}, 
+	update_recipe: async function(recipeName, groceries) {
+		let existing_recipe = (await this.get_recipe_by_name(recipeName))[0];
+		if (!existing_recipe) {
+            return {success: false};
+        }
+		
+		let lines = groceries.map(x => [existing_recipe.id, x.id, x.amount])
+		
+		try {
+			const client = await pool.connect();
+            const result = await client.query(
+				`DELETE FROM recipes
+				WHERE
+				recipe_id = $1`, [existing_recipe.id]);
+
+			for (const x of lines) {
+				await client.query(
+					`INSERT INTO recipes(recipe_id, grocerie_id, amount)
+					VALUES ($1, $2, $3)`, x);
+			}
+
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}		
+
 	}
 	
 }

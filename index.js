@@ -78,6 +78,12 @@ app.post('/api/editGrocery', checkJwt, async function (req, res){
     res.json(req.body);
 });
 
+app.post('/api/editRecipe', async function(req, res) {
+    let body = req.body;
+    let resp = await repo.update_recipe(body.Name, body.GroceryTable);
+    res.json(req.body);
+});
+
 // ----------------------------------------------------------------------------
 let port = process.env.PORT;
 if (port == null || port == "") {
