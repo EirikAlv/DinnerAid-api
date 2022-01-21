@@ -294,7 +294,29 @@ module.exports = {
 			console.error(err);
 			return("Error " + err);
 		}		
+	},
 
+	// DELETE
+	delete_recipe: async function(recipe) {
+		let existing_recipe = (await this.get_recipe_by_name(recipe))[0];
+		try {
+			const client = await pool.connect();
+			await client.query(
+				`DELETE FROM recipes
+				WHERE recipe_id = $1`, [existing_recipe.id]);
+
+            const result = await client.query(
+				`DELETE FROM recipes_names
+				WHERE id = $1 RETURNING *
+				`, [existing_recipe.id]);
+
+            client.release();
+            return(result?.rows);
+		} catch (err) {
+			console.error(err);
+			return("Error " + err);
+		}
 	}
+
 	
 }

@@ -78,11 +78,19 @@ app.post('/api/editGrocery', checkJwt, async function (req, res){
     res.json(req.body);
 });
 
-app.post('/api/editRecipe', async function(req, res) {
+app.post('/api/editRecipe', checkJwt, async function(req, res) {
     let body = req.body;
     let resp = await repo.update_recipe(body.Name, body.GroceryTable);
     res.json(req.body);
 });
+
+// ----------------------------------------------------------------------------
+// DELETE
+app.delete('/api/deleteRecipe', checkJwt, async function(req, res) {
+    let body = req.body;
+    let resp = await repo.delete_recipe(body.Name);
+    res.end('success')
+})
 
 // ----------------------------------------------------------------------------
 let port = process.env.PORT;
