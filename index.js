@@ -95,7 +95,7 @@ app.delete('/api/deleteRecipe', checkJwt, async function(req, res) {
 
 // ----------------------------------------------------------------------------
 // ORDER
-app.post('/api/orderRecipe', async function(req, res) {
+app.post('/api/orderRecipe', checkJwt, async function(req, res) {
     let body = req.body;
     repo.setAmountInName(body);
 
