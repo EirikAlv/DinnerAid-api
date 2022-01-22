@@ -316,7 +316,16 @@ module.exports = {
 			console.error(err);
 			return("Error " + err);
 		}
-	}
+	},
+
+	// DIV
+	setAmountInName(grocery_list) {
+        grocery_list.forEach(x => {
+            let item_number = x.standard_quantity > 0 ? x.amount/x.standard_quantity : 0;
+
+            x.norwegian = item_number > 1 ? `${x.norwegian} x${Math.ceil(x.amount/x.standard_quantity)}` : x.norwegian;
+        })
+    }
 
 	
 }

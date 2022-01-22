@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser')
 const repo = require('./repository')
+const todolist = require('./TodoListWrapper');
 require('dotenv').config()
 
 //CORS
@@ -91,6 +92,20 @@ app.delete('/api/deleteRecipe', checkJwt, async function(req, res) {
     let resp = await repo.delete_recipe(body.Name);
     res.end('success')
 })
+
+// ----------------------------------------------------------------------------
+// ORDER
+app.post('/api/orderRecipe', async function(req, res) {
+    let body = req.body;
+    repo.setAmountInName(body);
+
+    for (const el of body) {
+        await todolist.SaveItem(el);
+    }
+
+    res.end('success');
+})
+
 
 // ----------------------------------------------------------------------------
 let port = process.env.PORT;
