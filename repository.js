@@ -215,7 +215,7 @@ module.exports = {
 		let grocery_table = await this.get_groceries_with_id();
         let new_groceries = groceries.map(x => {
             let found = grocery_table.find(y => y.norwegian === x.norwegian);
-            found.amount = x.amount;
+            found.amount = !isNaN(parseInt(x.amount)) ? x.amount : 0;
             return found; 
         });
 		

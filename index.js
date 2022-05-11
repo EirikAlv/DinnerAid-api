@@ -106,6 +106,13 @@ app.post('/api/orderRecipe', checkJwt, async function(req, res) {
     res.end('success');
 })
 
+app.post('/api/orderGrocery', checkJwt, async function(req, res) {
+    let body = req.body;
+
+    await todolist.SaveItem(body);
+
+    res.end('success');
+})
 
 // ----------------------------------------------------------------------------
 let port = process.env.PORT;
