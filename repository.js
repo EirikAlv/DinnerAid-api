@@ -5,7 +5,7 @@ const pool = new Pool({
 	ssl: process.env.ENVIRONMENT === 'DEV' ? false : { rejectUnauthorized: false }
 });
 
-let foo = process.env.ENVIRONMENT;
+
 module.exports = {
     get_test_table: async function() {
         try {
@@ -171,6 +171,22 @@ module.exports = {
 			console.error(err);
 			return("Error " + err);
 		}
+	},
+	search_recipes: async function(groceries) {
+		const all_recipes = await this.get_all_recipes();
+
+		const res = all_recipes.filter(recipe => {
+			return groceries.every(g => {
+				let found_grocery = recipe.Table.find(x => x.id === g.id);
+				if (found_grocery) {
+					return found_grocery.amount >= g.amount
+				}
+
+				return false;
+			});
+		});
+
+		return res;
 	},
 
 	// --------------------------------------------------------------------------------------

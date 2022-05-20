@@ -85,6 +85,14 @@ app.post('/api/editRecipe', checkJwt, async function(req, res) {
     res.json(req.body);
 });
 
+app.post('/api/searchRecipes', checkJwt, async function(req, res) {
+    let body = req.body;
+
+    let response = await repo.search_recipes(body);
+
+    res.json(response);
+});
+
 // ----------------------------------------------------------------------------
 // DELETE
 app.delete('/api/deleteRecipe', checkJwt, async function(req, res) {
